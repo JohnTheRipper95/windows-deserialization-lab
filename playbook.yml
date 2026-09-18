@@ -4,6 +4,7 @@
   gather_facts: false
 
   vars:
+    windows_hostname: 'windows-deserialization-lab'
     source_zip: 'C:\vagrant\files\ysoserial.zip'
     deploy_root: 'C:\opt'
     source_dir: 'C:\opt\ysoserial.net'
@@ -11,6 +12,16 @@
     executable_path: 'C:\opt\ysoserial.net\Release\ysoserial.exe'
 
   tasks:
+    - name: Configurar hostname del laboratorio
+      ansible.windows.win_hostname:
+        name: "{{ windows_hostname }}"
+      register: hostname_status
+
+    - name: Reiniciar Windows después de cambiar el hostname
+      ansible.windows.win_reboot:
+        msg: "Reinicio requerido para aplicar el hostname del laboratorio"
+      when: hostname_status.reboot_required
+
     - name: Comprobar que existe el ZIP compartido
       ansible.windows.win_stat:
         path: "{{ source_zip }}"

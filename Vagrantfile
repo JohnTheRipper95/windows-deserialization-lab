@@ -1,6 +1,5 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "gusztavvargadr/windows-10"
-  config.vm.hostname = "windows-deserialization-lab"
   config.vm.communicator = "winrm"
 
   config.vm.boot_timeout = 600
