@@ -8,6 +8,7 @@ Vagrant.configure("2") do |config|
   config.winrm.password = "vagrant"
   config.winrm.transport = :plaintext
   config.winrm.basic_auth_only = true
+  config.disksize.size = "30GB"
 
   config.vm.synced_folder ".", "/vagrant"
 
