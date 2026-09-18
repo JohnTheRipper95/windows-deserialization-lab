@@ -1,5 +1,5 @@
 Vagrant.configure("2") do |config|
-  config.vm.box = "baunegaard/win10pro-en"
+  config.vm.box = "gusztavvargadr/windows-10"
   config.vm.communicator = "winrm"
 
   config.vm.boot_timeout = 600
