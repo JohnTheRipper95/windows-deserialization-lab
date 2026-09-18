@@ -19,6 +19,10 @@ Vagrant.configure("2") do |config|
     vb.gui = true
   end
 
+  config.vm.provision "file",
+    source: "files/ysoserial.zip",
+    destination: "C:\\Windows\\Temp\\ysoserial.zip"
+
   config.vm.provision "ansible" do |ansible|
     ansible.playbook = "playbook.yml"
     ansible.inventory_path = "inventory/hosts"

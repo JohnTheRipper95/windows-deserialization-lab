@@ -1,53 +1,42 @@
 ---
-- name: Desplegar ysoserial.net precompilado en Windows
+- name: Deploy precompiled ysoserial.net on Windows
   hosts: windows
   gather_facts: false
 
   vars:
-    windows_hostname: 'windows-deserialization-lab'
-    source_zip: 'C:\vagrant\files\ysoserial.zip'
+    source_zip: 'C:\Windows\Temp\ysoserial.zip'
     deploy_root: 'C:\opt'
     source_dir: 'C:\opt\ysoserial.net'
     executable_dir: 'C:\opt\ysoserial.net\Release'
     executable_path: 'C:\opt\ysoserial.net\Release\ysoserial.exe'
 
   tasks:
-    - name: Configurar hostname del laboratorio
-      ansible.windows.win_hostname:
-        name: "{{ windows_hostname }}"
-      register: hostname_status
-
-    - name: Reiniciar Windows después de cambiar el hostname
-      ansible.windows.win_reboot:
-        msg: "Reinicio requerido para aplicar el hostname del laboratorio"
-      when: hostname_status.reboot_required
-
-    - name: Comprobar que existe el ZIP compartido
+    - name: Check that the uploaded ZIP exists
       ansible.windows.win_stat:
         path: "{{ source_zip }}"
       register: zip_status
 
-    - name: Detener si no existe el ZIP
+    - name: Stop if the ZIP is missing
       ansible.builtin.fail:
-        msg: "No se encontró {{ source_zip }}"
+        msg: "The ZIP file was not found: {{ source_zip }}"
       when: not zip_status.stat.exists
 
-    - name: Crear directorio de herramientas
+    - name: Create the tools directory
       ansible.windows.win_file:
         path: "{{ deploy_root }}"
         state: directory
 
-    - name: Limpiar código anterior
+    - name: Remove the previous deployment
       ansible.windows.win_file:
         path: "{{ source_dir }}"
         state: absent
 
-    - name: Crear directorio fuente
+    - name: Create the deployment directory
       ansible.windows.win_file:
         path: "{{ source_dir }}"
         state: directory
 
-    - name: Descomprimir distribución precompilada
+    - name: Extract the precompiled distribution
       ansible.windows.win_shell: |
         Expand-Archive `
           -Path "{{ source_zip }}" `
@@ -56,27 +45,27 @@
       args:
         executable: powershell.exe
 
-    - name: Agregar ysoserial.net al PATH del sistema
+    - name: Add ysoserial.net to the system PATH
       ansible.windows.win_path:
         elements:
           - "{{ executable_dir }}"
         scope: machine
 
-    - name: Comprobar que existe ysoserial.exe
+    - name: Check that ysoserial.exe exists
       ansible.windows.win_stat:
         path: "{{ executable_path }}"
       register: executable_status
 
-    - name: Mostrar ejecutable desplegado
+    - name: Show the deployed executable
       ansible.builtin.debug:
         msg: "{{ executable_path }}"
 
-    - name: Fallar si no se encuentra ysoserial.exe
+    - name: Fail if ysoserial.exe is missing
       ansible.builtin.fail:
-        msg: "No se encontró ysoserial.exe precompilado en {{ executable_path }}"
+        msg: "The precompiled ysoserial.exe was not found at {{ executable_path }}"
       when: not executable_status.stat.exists
 
-    - name: Ejecutar ayuda de ysoserial.net
+    - name: Run the ysoserial.net help command
       ansible.windows.win_command:
         argv:
           - "{{ executable_path }}"
@@ -84,6 +73,6 @@
       register: help_output
       changed_when: false
 
-    - name: Mostrar ayuda
+    - name: Show the help output
       ansible.builtin.debug:
         var: help_output.stdout_lines
