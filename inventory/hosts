@@ -1,0 +1,10 @@
+[windows]
+windows10 ansible_host=127.0.0.1
+
+[windows:vars]
+ansible_connection=winrm
+ansible_user=vagrant
+ansible_password=vagrant
+ansible_port=55985
+ansible_winrm_transport=basic
+ansible_winrm_server_cert_validation=ignore
