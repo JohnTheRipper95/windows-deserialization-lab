@@ -1,14 +1,14 @@
 ---
-- name: Compilar ysoserial.net en Windows
+- name: Desplegar ysoserial.net precompilado en Windows
   hosts: windows
   gather_facts: false
 
   vars:
     source_zip: 'C:\vagrant\files\ysoserial.zip'
-    build_root: 'C:\build'
-    source_dir: 'C:\build\ysoserial.net'
-    solution_file: 'C:\build\ysoserial.net\ysoserial.sln'
-    msbuild_exe: 'C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe'
+    deploy_root: 'C:\opt'
+    source_dir: 'C:\opt\ysoserial.net'
+    executable_dir: 'C:\opt\ysoserial.net\Release'
+    executable_path: 'C:\opt\ysoserial.net\Release\ysoserial.exe'
 
   tasks:
     - name: Comprobar que existe el ZIP compartido
@@ -21,43 +21,9 @@
         msg: "No se encontró {{ source_zip }}"
       when: not zip_status.stat.exists
 
-    - name: Instalar Chocolatey
-      ansible.windows.win_shell: |
-        Set-ExecutionPolicy Bypass -Scope Process -Force
-        [System.Net.ServicePointManager]::SecurityProtocol = `
-          [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-
-        if (-not (Test-Path 'C:\ProgramData\chocolatey\bin\choco.exe')) {
-          iex ((New-Object System.Net.WebClient).DownloadString(
-            'https://community.chocolatey.org/install.ps1'
-          ))
-        }
-      args:
-        executable: powershell.exe
-
-    - name: Instalar Visual Studio Community
-      chocolatey.chocolatey.win_chocolatey:
-        name: visualstudio2022community
-        state: present
-
-    - name: Instalar workload nativedesktop
-      chocolatey.chocolatey.win_chocolatey:
-        name: visualstudio2022-workload-nativedesktop
-        state: present
-
-    - name: Instalar MSBuild Community Tasks
-      chocolatey.chocolatey.win_chocolatey:
-        name: msbuild.communitytasks
-        state: present
-
-    - name: Instalar NuGet
-      chocolatey.chocolatey.win_chocolatey:
-        name: nuget.commandline
-        state: present
-
-    - name: Crear directorio de compilación
+    - name: Crear directorio de herramientas
       ansible.windows.win_file:
-        path: "{{ build_root }}"
+        path: "{{ deploy_root }}"
         state: directory
 
     - name: Limpiar código anterior
@@ -70,7 +36,7 @@
         path: "{{ source_dir }}"
         state: directory
 
-    - name: Descomprimir código fuente
+    - name: Descomprimir distribución precompilada
       ansible.windows.win_shell: |
         Expand-Archive `
           -Path "{{ source_zip }}" `
@@ -79,71 +45,34 @@
       args:
         executable: powershell.exe
 
-    - name: Localizar ysoserial.sln
-      ansible.windows.win_find:
-        paths:
-          - "{{ source_dir }}"
-        patterns:
-          - ysoserial.sln
-        recurse: true
-      register: solution_search
+    - name: Agregar ysoserial.net al PATH del sistema
+      ansible.windows.win_path:
+        elements:
+          - "{{ executable_dir }}"
+        scope: machine
 
-    - name: Mostrar solución encontrada
-      ansible.builtin.debug:
-        msg: "{{ solution_search.files | map(attribute='path') | list }}"
-
-    - name: Detener si no se encuentra la solución
-      ansible.builtin.fail:
-        msg: "No se encontró ysoserial.sln dentro de {{ source_dir }}"
-      when: solution_search.matched | int == 0
-
-    - name: Restaurar paquetes NuGet
-      ansible.windows.win_command:
-        argv:
-          - nuget
-          - restore
-          - "{{ solution_search.files[0].path }}"
-
-    - name: Comprobar que existe MSBuild
+    - name: Comprobar que existe ysoserial.exe
       ansible.windows.win_stat:
-        path: "{{ msbuild_exe }}"
-      register: msbuild_status
+        path: "{{ executable_path }}"
+      register: executable_status
 
-    - name: Detener si no se encuentra MSBuild
-      ansible.builtin.fail:
-        msg: "No se encontró MSBuild en {{ msbuild_exe }}"
-      when: not msbuild_status.stat.exists
-
-    - name: Compilar ysoserial.net
-      ansible.windows.win_command:
-        argv:
-          - "{{ msbuild_exe }}"
-          - "{{ solution_search.files[0].path }}"
-          - /p:Configuration=Release
-
-    - name: Buscar ysoserial.exe
-      ansible.windows.win_find:
-        paths:
-          - "{{ source_dir }}"
-        patterns:
-          - ysoserial.exe
-        recurse: true
-      register: executable_search
-
-    - name: Mostrar ejecutables generados
+    - name: Mostrar ejecutable desplegado
       ansible.builtin.debug:
-        msg: "{{ executable_search.files | map(attribute='path') | list }}"
+        msg: "{{ executable_path }}"
+
+    - name: Fallar si no se encuentra ysoserial.exe
+      ansible.builtin.fail:
+        msg: "No se encontró ysoserial.exe precompilado en {{ executable_path }}"
+      when: not executable_status.stat.exists
 
     - name: Ejecutar ayuda de ysoserial.net
       ansible.windows.win_command:
         argv:
-          - "{{ executable_search.files[0].path }}"
+          - "{{ executable_path }}"
           - -h
       register: help_output
       changed_when: false
-      when: executable_search.matched | int > 0
 
     - name: Mostrar ayuda
       ansible.builtin.debug:
         var: help_output.stdout_lines
-      when: executable_search.matched | int > 0

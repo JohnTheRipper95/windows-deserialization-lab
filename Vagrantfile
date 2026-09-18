@@ -1,5 +1,6 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "gusztavvargadr/windows-10"
+  config.vm.hostname = "windows-deserialization-lab"
   config.vm.communicator = "winrm"
 
   config.vm.boot_timeout = 600
@@ -8,11 +9,11 @@ Vagrant.configure("2") do |config|
   config.winrm.password = "vagrant"
   config.winrm.transport = :plaintext
   config.winrm.basic_auth_only = true
-  config.disksize.size = "30GB"
 
   config.vm.synced_folder ".", "/vagrant"
 
   config.vm.provider "virtualbox" do |vb|
+    vb.name = "windows-deserialization-lab"
     vb.cpus = 2
     vb.memory = 3048
     vb.linked_clone = true

@@ -1,7 +1,9 @@
 [windows]
+# Laboratorio local: WinRM se publica en el host mediante Vagrant.
 windows10 ansible_host=127.0.0.1
 
 [windows:vars]
+# Credenciales de la VM de laboratorio, no reutilizar fuera de este entorno.
 ansible_connection=winrm
 ansible_user=vagrant
 ansible_password=vagrant
