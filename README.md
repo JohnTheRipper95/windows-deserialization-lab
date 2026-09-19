@@ -25,6 +25,15 @@ repository for authorship, licensing, and project terms:
 
 https://github.com/pwntester/ysoserial.net
 
+## Licensing
+
+The automation, configuration, and documentation created for this repository
+are released under the MIT License. See [LICENSE](LICENSE).
+
+The precompiled `ysoserial.net` distribution and bundled dependencies retain
+their original licenses. See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)
+and the upstream project for details.
+
 ## Requirements
 
 - Vagrant
