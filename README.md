@@ -40,6 +40,10 @@ From the repository root:
 vagrant up
 ```
 
+Provisioning may take several minutes while Windows boots and the files are
+uploaded. Please wait for the provisioning process to complete before
+interrupting it or opening a new terminal to test the VM.
+
 The playbook extracts ysoserial.net to `C:\opt\ysoserial.net`, adds
 `C:\opt\ysoserial.net\Release` to the system `PATH`, and runs
 `ysoserial.exe -h` as a basic verification. Open a new Windows console after
