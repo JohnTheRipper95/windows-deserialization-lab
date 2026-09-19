@@ -6,8 +6,7 @@ deserialization and `ysoserial.net`.
 The VM uses Vagrant and VirtualBox. Vagrant uploads the precompiled
 distribution from `files/ysoserial.zip` to the Windows guest, and Ansible
 deploys it through WinRM. The setup does not install Visual Studio, NuGet, or
-MSBuild. The Windows hostname from the base box is preserved, so provisioning
-does not require a reboot for renaming.
+MSBuild. Provisioning preserves the Windows hostname from the base box.
 
 The precompiled tool is based on the upstream
 [pwntester/ysoserial.net](https://github.com/pwntester/ysoserial.net)
