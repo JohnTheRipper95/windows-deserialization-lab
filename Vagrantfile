@@ -27,7 +27,6 @@ Vagrant.configure("2") do |config|
     ansible.playbook = "playbook.yml"
     ansible.inventory_path = "inventory/hosts"
     ansible.limit = "windows"
-    ansible.verbose = "vvv"
 
     ansible.extra_vars = {
       ansible_connection: "winrm",

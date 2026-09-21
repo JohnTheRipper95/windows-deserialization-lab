@@ -48,6 +48,13 @@ From the repository root:
 vagrant up
 ```
 
+The Windows VM login credentials are:
+
+```text
+Username: vagrant
+Password: vagrant
+```
+
 Provisioning may take several minutes while Windows boots and the files are
 uploaded. Please wait for the process to complete before interrupting it or
 opening a new terminal to test the VM.
